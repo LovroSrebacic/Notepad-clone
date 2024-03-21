@@ -7,19 +7,29 @@ import java.util.List;
 
 import iterator.LinesIterator;
 import location.Location;
+import location.LocationRange;
 import observer.CursorObserver;
+import observer.SelectionObserver;
+import observer.TextObserver;
 
 
 public class TextEditorModel {
 
 	private List<String> lines;
 	private Location cursorLocation;
+	private LocationRange selectionRange;
+	
 	private List<CursorObserver> cursorObservers;
+	private List<TextObserver> textObservers;
+	private List<SelectionObserver> selectionObservers;
 	
 	public TextEditorModel(String text) {
 		this.lines = new ArrayList<>(Arrays.asList(text.split("\\n")));
 		this.cursorLocation = new Location(0, 0);
+		
 		this.cursorObservers = new ArrayList<>();
+		this.textObservers = new ArrayList<>();
+		this.selectionObservers = new ArrayList<>();
 	}
 	
 	public List<String> getLines() {
@@ -49,6 +59,18 @@ public class TextEditorModel {
 	public Iterator<String> linesRange(int start, int end) {
 		return new LinesIterator(lines, start, end);
 	}
+
+	public LocationRange getSelectionRange() {
+		return this.selectionRange;
+	}
+	
+	public void setSelectionRange(LocationRange range) {
+		this.selectionRange = range;
+	}
+	
+	public boolean hasSelection() {
+		return this.selectionRange != null;
+	}
 	
 	public void addCursorObserver(CursorObserver cursorObserver) {
 		if(!this.cursorObservers.contains(cursorObserver)) {
@@ -63,6 +85,42 @@ public class TextEditorModel {
 	public void notifyCursorObservers() {
 		for (CursorObserver cursorObserver : cursorObservers) {
 			cursorObserver.updateCursorLocation(cursorLocation);
+		}
+	}
+	
+	public void addTextObserver(TextObserver textObserver) {
+		if (!this.textObservers.contains(textObserver)) {
+			this.textObservers.add(textObserver);
+		}
+	}
+
+	public void removeTextObserver(TextObserver textObserver) {
+		this.textObservers.remove(textObserver);
+	}
+
+	public void notifyTextObservers() {
+		for (TextObserver textObserver : textObservers) {
+			textObserver.updateText();
+		}
+	}
+
+	public void addSelectionObserver(SelectionObserver selectionObserver) {
+		if (!this.selectionObservers.contains(selectionObserver)) {
+			this.selectionObservers.add(selectionObserver);
+		}
+	}
+
+	public void removeSelectionObserver(SelectionObserver selectionObserver) {
+		this.selectionObservers.add(selectionObserver);
+	}
+
+	public void notifySelectionObservers() {
+		for (SelectionObserver selectionObserver : selectionObservers) {
+			if (hasSelection()) {
+				selectionObserver.hasSelection(true);
+			} else {
+				selectionObserver.hasSelection(false);
+			}
 		}
 	}
 	
