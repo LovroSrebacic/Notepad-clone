@@ -5,7 +5,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.util.List;
+import java.util.Iterator;
 
 import javax.swing.JPanel;
 
@@ -35,19 +35,23 @@ public class TextEditorPanel extends JPanel{
 		g2d.setFont(new Font("Courier New", Font.PLAIN, 12));
 		FontMetrics fm = g2d.getFontMetrics();
 		
-		List<String> lines = this.model.getLines();
+		int lineWidth = 0;
+		Iterator<String> lineIterator = this.model.allLines();
+		String line = "";
+		int counter = 0;
 		
-		int lineWidth;
-		for(int i = 0; i < lines.size(); i++){
-			lineWidth = (int) fm.getStringBounds(lines.get(i), g2d).getWidth();
+		while(lineIterator.hasNext()) {
+			line = lineIterator.next();
+			lineWidth = (int) fm.getStringBounds(line, g2d).getWidth();
 			if(lineWidth > width) {
 				width = lineWidth;
 			}
 			
-			g2d.drawString(lines.get(i), MARGIN, i * SPACE + fm.getHeight());
+			g2d.drawString(line, MARGIN, counter * SPACE + fm.getHeight());
+			counter++;
 		}
 		
-		this.height = lines.size() * SPACE + fm.getHeight();
+		this.height = counter * SPACE + fm.getHeight();
 		this.width += 3 * MARGIN;
 	}
 	
