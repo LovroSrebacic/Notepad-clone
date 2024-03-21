@@ -14,6 +14,7 @@ import javax.swing.WindowConstants;
 
 import location.Location;
 import observer.CursorObserver;
+import observer.TextObserver;
 
 public class TextEditor extends JFrame {
 
@@ -40,13 +41,20 @@ public class TextEditor extends JFrame {
 				panel.repaint();
 			}
 		});
+		this.model.addTextObserver(new TextObserver() {
+			@Override
+			public void updateText() {
+				panel.revalidate();
+				panel.repaint();
+			}
+		});
 	}
 
 	private void initGUI() {
 		this.panel = new TextEditorPanel(model);
 		this.panel.setBackground(Color.WHITE);
 		add(this.panel, BorderLayout.CENTER);
-		
+
 		addListeners();
 
 		pack();
@@ -83,6 +91,14 @@ public class TextEditor extends JFrame {
 
 				case KeyEvent.VK_DOWN: {
 					model.moveCursorDown();
+					break;
+				}
+				case KeyEvent.VK_BACK_SPACE: {
+					model.executeAction("DeleteBeforeAction");
+					break;
+				}
+				case KeyEvent.VK_DELETE: {
+					model.executeAction("DeleteAfterAction");
 					break;
 				}
 				}
