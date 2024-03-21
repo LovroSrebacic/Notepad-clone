@@ -75,30 +75,54 @@ public class TextEditor extends JFrame {
 			public void keyPressed(KeyEvent e) {
 				switch (e.getKeyCode()) {
 				case KeyEvent.VK_LEFT: {
-					model.moveCursorLeft();
+					if (e.isShiftDown()) {
+						model.addSelectionLeft();
+					} else {
+						model.moveCursorLeft(false);
+					}
 					break;
 				}
 
 				case KeyEvent.VK_RIGHT: {
-					model.moveCursorRight();
+					if (e.isShiftDown()) {
+						model.addSelectionRight();
+					} else {
+						model.moveCursorRight(false);
+					}
 					break;
 				}
 
 				case KeyEvent.VK_UP: {
-					model.moveCursorUp();
+					if (e.isShiftDown()) {
+						model.addSelectionUp();
+					} else {
+						model.moveCursorUp(false);
+					}
 					break;
 				}
 
 				case KeyEvent.VK_DOWN: {
-					model.moveCursorDown();
+					if (e.isShiftDown()) {
+						model.addSelectionDown();
+					} else {
+						model.moveCursorDown(false);
+					}
 					break;
 				}
 				case KeyEvent.VK_BACK_SPACE: {
-					model.executeAction("DeleteBeforeAction");
+					if (model.hasSelection()) {
+						model.executeAction("DeleteRangeAction");
+					} else {
+						model.executeAction("DeleteBeforeAction");
+					}
 					break;
 				}
 				case KeyEvent.VK_DELETE: {
-					model.executeAction("DeleteAfterAction");
+					if (model.hasSelection()) {
+						model.executeAction("DeleteRangeAction");
+					} else {
+						model.executeAction("DeleteAfterAction");
+					}
 					break;
 				}
 				}

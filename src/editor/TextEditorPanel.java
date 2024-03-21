@@ -1,16 +1,19 @@
 package editor;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.LineMetrics;
+import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 
 import javax.swing.JPanel;
 
 import location.Location;
+import location.LocationRange;
 
 public class TextEditorPanel extends JPanel{
 
@@ -37,6 +40,55 @@ public class TextEditorPanel extends JPanel{
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setFont(new Font("Courier New", Font.PLAIN, 12));
 		FontMetrics fm = g2d.getFontMetrics();
+		
+		if (this.model.hasSelection()) {
+			LocationRange range = this.model.getSelectionRange();
+			Location start = null;
+			Location end = null;
+
+			if (range.getEnd().getY() > range.getStart().getY()) {
+				start = range.getStart();
+				end = range.getEnd();
+			} else if (range.getEnd().getY() == range.getStart().getY()) {
+				if (range.getEnd().getX() > range.getStart().getX()) {
+					start = range.getStart();
+					end = range.getEnd();
+				} else {
+					start = range.getEnd();
+					end = range.getStart();
+				}
+			} else {
+				start = range.getEnd();
+				end = range.getStart();
+			}
+
+			g2d.setColor(Color.LIGHT_GRAY);
+			Rectangle2D rectangle = null;
+			String line = null;
+
+			if (end.getY() - start.getY() == 0) {
+				line = this.model.getLine(start.getY());
+				rectangle = fm.getStringBounds(line.substring(start.getX(), end.getX()), g2d);
+				g2d.fillRect(MARGIN + fm.stringWidth(line.substring(0, start.getX())), start.getY() * SPACE,
+						(int) rectangle.getWidth(), fm.getHeight());
+			} else {
+				line = this.model.getLine(start.getY());
+				rectangle = fm.getStringBounds(line.substring(start.getX()), g2d);
+				g2d.fillRect(MARGIN + fm.stringWidth(line.substring(0, start.getX())), start.getY() * SPACE,
+						(int) rectangle.getWidth(), fm.getHeight());
+				for (int i = start.getY() + 1; i < end.getY(); i++) {
+					line = model.getLine(i);
+					rectangle = fm.getStringBounds(line, g2d);
+					g2d.fillRect(MARGIN, i * SPACE, (int) rectangle.getWidth(), fm.getHeight());
+				}
+
+				line = model.getLine(end.getY());
+				rectangle = fm.getStringBounds(line.substring(0, end.getX()), g2d);
+				g2d.fillRect(MARGIN, end.getY() * SPACE, (int) rectangle.getWidth(), fm.getHeight());
+			}
+			
+			g2d.setColor(Color.BLACK);
+		}
 		
 		int lineWidth = 0;
 		Iterator<String> lineIterator = this.model.allLines();
