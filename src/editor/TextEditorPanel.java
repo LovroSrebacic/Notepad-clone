@@ -5,9 +5,12 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.font.LineMetrics;
 import java.util.Iterator;
 
 import javax.swing.JPanel;
+
+import location.Location;
 
 public class TextEditorPanel extends JPanel{
 
@@ -53,6 +56,23 @@ public class TextEditorPanel extends JPanel{
 		
 		this.height = counter * SPACE + fm.getHeight();
 		this.width += 3 * MARGIN;
+		
+		Location cursorLocation = this.model.getCursorLocation();
+		
+		if (!this.model.getLines().isEmpty() && this.model.getLine(cursorLocation.getY()).length() != 0) {
+			line = this.model.getLine(cursorLocation.getY()).substring(0, cursorLocation.getX());
+		} else {
+			line = "";
+		}
+
+		LineMetrics lm = g2d.getFont().getLineMetrics(line, g2d.getFontRenderContext());
+
+		int x1 = fm.stringWidth(line) + MARGIN;
+		int y1 = cursorLocation.getY() * SPACE + fm.getHeight();
+		int x2 = x1;
+		int y2 = y1 - (int) lm.getHeight();
+
+		g2d.drawLine(x1, y1, x2, y2);
 	}
 	
 	@Override

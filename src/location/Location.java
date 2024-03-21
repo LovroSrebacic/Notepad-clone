@@ -43,6 +43,11 @@ public class Location {
 		this.x = location.getX();
 		this.y = location.getY();
 	}
+	
+	public void updateLocation(int x, int y) {
+		this.x += x;
+		this.y += y;
+	}
 
 	@Override
 	public boolean equals(Object obj) {
