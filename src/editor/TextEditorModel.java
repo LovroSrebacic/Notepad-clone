@@ -14,6 +14,7 @@ import java.util.Map;
 import com.sun.tools.javac.Main;
 
 import action.EditAction;
+import action.InsertTextAction;
 import iterator.LinesIterator;
 import location.Location;
 import location.LocationRange;
@@ -57,7 +58,7 @@ public class TextEditorModel {
 		try {
 			for(String className : getClassNamesFromPackage(packageName)) {
 				Class<?> cls = Class.forName(packageName + "." + className);
-				if(EditAction.class.isAssignableFrom(cls) && !className.equals("EditAction")) {
+				if(EditAction.class.isAssignableFrom(cls) && !className.equals("EditAction")) {	
 					Constructor<?> constructor = cls.getConstructor(TextEditorModel.class);
 					EditAction action = (EditAction) constructor.newInstance(this);
 					actions.put(className, action);
@@ -373,5 +374,15 @@ public class TextEditorModel {
 		} else {
 			return "";
 		}
+	}
+	
+	public void insert(char c) {
+		EditAction insertTextAction = (InsertTextAction) actions.get("InsertTextAction");
+		((InsertTextAction) insertTextAction).setChar(c);
+	}
+
+	public void insert(String text) {
+		EditAction insertTextAction = (InsertTextAction) actions.get("InsertTextAction");
+		((InsertTextAction) insertTextAction).setText(text);;
 	}
 }

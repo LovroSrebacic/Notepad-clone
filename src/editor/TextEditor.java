@@ -125,6 +125,14 @@ public class TextEditor extends JFrame {
 					}
 					break;
 				}
+				default: {
+					if (e.getKeyCode() != KeyEvent.VK_SHIFT && !e.isActionKey() && e.getKeyCode() != KeyEvent.VK_ALT
+							&& e.getKeyCode() != KeyEvent.VK_ALT_GRAPH && !e.isControlDown()
+							&& e.getKeyCode() != KeyEvent.VK_ESCAPE) {
+						model.insert(e.getKeyChar());
+						model.executeAction("InsertTextAction");
+					}
+				}
 				}
 			}
 		});
