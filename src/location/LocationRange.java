@@ -3,7 +3,7 @@ package location;
 public class LocationRange {
 	private Location start;
 	private Location end;
-	
+
 	public LocationRange() {
 		this.start = new Location(0, 0);
 		this.end = new Location(0, 0);
@@ -13,7 +13,7 @@ public class LocationRange {
 		this.start = start;
 		this.end = end;
 	}
-	
+
 	public LocationRange(LocationRange locationRange) {
 		this.start = locationRange.getStart();
 		this.end = locationRange.getEnd();
@@ -26,12 +26,12 @@ public class LocationRange {
 	public void setStart(Location start) {
 		this.start = start;
 	}
-	
+
 	public void updateStart(int x, int y) {
 		this.start.setX(x);
 		this.start.setY(y);
 	}
-	
+
 	public Location getEnd() {
 		return end;
 	}
@@ -39,12 +39,12 @@ public class LocationRange {
 	public void setEnd(Location end) {
 		this.end = end;
 	}
-	
+
 	public void updateEnd(int x, int y) {
 		this.end.setX(x);
 		this.end.setY(y);
 	}
-	
+
 	public int getNumberOfLines() {
 		return this.end.getY() - this.start.getY();
 	}

@@ -67,6 +67,7 @@ public class DeleteRangeAction implements EditAction{
 		
 		model.setLines(newLines);
 		model.setSelectionRange(null);
+		model.notifySelectionObservers();
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
 	}

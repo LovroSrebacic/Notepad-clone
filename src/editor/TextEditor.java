@@ -7,13 +7,27 @@ import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import clipboard.ClipboardStack;
+import clipboard.CopyAction;
+import clipboard.CutAction;
+import clipboard.PasteAction;
+import clipboard.PasteAndTakeAction;
 import location.Location;
+import observer.ClipboardObserver;
 import observer.CursorObserver;
+import observer.SelectionObserver;
 import observer.TextObserver;
 
 public class TextEditor extends JFrame {
@@ -24,19 +38,30 @@ public class TextEditor extends JFrame {
 	private static final int WINDOW_HEIGHT = 700;
 
 	private TextEditorModel model;
-	private JPanel panel;
+	private TextEditorPanel panel;
+	private ClipboardStack stack;
+	
+	private AbstractAction cut;
+	private AbstractAction copy;
+	private AbstractAction paste;
+	private AbstractAction pasteAndTake;
 
 	public TextEditor() {
 		initTextEditorModel("Hello World!\nMy name is Lovro Srebacic!\nI hope you have a great day!\n");
 		initGUI();
+		createActions();
+		createMenuBar();
+		createToolbar();
 	}
 
 	private void initTextEditorModel(String text) {
 		this.model = new TextEditorModel(text);
+		this.stack = new ClipboardStack();
+		
 		this.model.addCursorObserver(new CursorObserver() {
-
 			@Override
 			public void updateCursorLocation(Location location) {
+				
 				panel.revalidate();
 				panel.repaint();
 			}
@@ -136,6 +161,55 @@ public class TextEditor extends JFrame {
 				}
 			}
 		});
+	}
+	
+	private void createActions() {
+		cut = new CutAction(stack, model, panel);
+		configureAction(cut, "Cut", KeyStroke.getKeyStroke("control X"), KeyEvent.VK_X, false);
+		copy = new CopyAction(stack, model);
+		configureAction(copy, "Copy", KeyStroke.getKeyStroke("control C"), KeyEvent.VK_C, false);
+		paste = new PasteAction(stack, model);
+		configureAction(paste, "Paste", KeyStroke.getKeyStroke("control V"), KeyEvent.VK_V, false);
+		pasteAndTake = new PasteAndTakeAction(stack, model);
+		configureAction(pasteAndTake, "Paste and Pop", KeyStroke.getKeyStroke("control shift V"), KeyEvent.VK_V, false);
+		
+		stack.addClipboardObserver((ClipboardObserver) paste);
+		stack.addClipboardObserver((ClipboardObserver) pasteAndTake);
+		model.addSelectionObserver((SelectionObserver) cut);
+		model.addSelectionObserver((SelectionObserver) copy);
+	}
+	
+	private void configureAction(AbstractAction action, String name, KeyStroke accelerator, int mnemoic, boolean enabled) {
+		action.putValue(Action.NAME, name);
+		action.putValue(Action.ACCELERATOR_KEY, accelerator);
+		action.putValue(Action.MNEMONIC_KEY, mnemoic);
+		action.setEnabled(enabled);
+	}
+	
+	private void createMenuBar() {
+		JMenuBar menuBar = new JMenuBar();
+		
+		JMenu edit = new JMenu("Edit");
+		edit.add(new JMenuItem(cut));
+		edit.add(new JMenuItem(copy));
+		edit.add(new JMenuItem(paste));
+		edit.add(new JMenuItem(pasteAndTake));
+		
+		menuBar.add(edit);
+		
+		setJMenuBar(menuBar);
+	}
+	
+	private void createToolbar() {
+		JToolBar toolBar = new JToolBar();
+		
+		toolBar.add(new JButton(cut));
+		toolBar.add(new JButton(copy));
+		toolBar.add(new JButton(paste));
+		toolBar.add(new JButton(pasteAndTake));
+		
+		toolBar.setFloatable(true);
+		add(toolBar, BorderLayout.NORTH);
 	}
 
 	public static void main(String[] args) {

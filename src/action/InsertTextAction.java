@@ -39,6 +39,7 @@ public class InsertTextAction implements EditAction{
 
 		if (text == null) {
 			if (c == 10) {
+				lines = model.getLines();
 				List<String> newLines = new ArrayList<>();
 				for (int i = 0; i < lines.size(); i++) {
 					if (cursorLocation.getY() == i) {
@@ -55,19 +56,20 @@ public class InsertTextAction implements EditAction{
 				String newLine = lines.get(cursorLocation.getY()).substring(0, cursorLocation.getX());
 				newLine += c;
 				newLine += lines.get(cursorLocation.getY()).substring(cursorLocation.getX());
-				lines.set(cursorLocation.getY(), newLine);
+				model.updateLine(cursorLocation.getY(), newLine);
 				cursorLocation.updateLocation(1, 0);
 			}
 		} else {
+			lines = model.getLines();
 			String[] newLine = text.split("\\n");
 			String left = lines.get(cursorLocation.getY()).substring(0, cursorLocation.getX());
 			String right = lines.get(cursorLocation.getY()).substring(cursorLocation.getX());
 
 			if (newLine.length == 1) {
-				lines.set(cursorLocation.getY(), left + newLine[0] + right);
-				cursorLocation.setLocation(0, newLine[0].length());
+				model.updateLine(cursorLocation.getY(), left + newLine[0] + right);
+				cursorLocation.setLocation(left.length() + newLine[0].length(), cursorLocation.getY());
 			} else {
-				lines.set(cursorLocation.getY(), left + newLine[0]);
+				model.updateLine(cursorLocation.getY(), left + newLine[0]);
 				ArrayList<String> newLines = new ArrayList<>();
 				for (int i = 0; i < lines.size(); i++) {
 					if (i == cursorLocation.getY()) {
@@ -81,12 +83,14 @@ public class InsertTextAction implements EditAction{
 					}
 				}
 
-				model.setCursorLocation(new Location(newLine[newLine.length - 1].length() + right.length(),
+				model.setCursorLocation(new Location(newLine[newLine.length - 1].length(),
 						cursorLocation.getY() + newLine.length - 1));
 				model.setLines(newLines);
 			}
+			setText(null);
 		}
 
+		model.notifySelectionObservers();
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
 	}
