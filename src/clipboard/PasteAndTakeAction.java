@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
+import action.EditAction;
 import editor.TextEditorModel;
 import observer.ClipboardObserver;
 
@@ -21,8 +22,8 @@ public class PasteAndTakeAction extends AbstractAction implements ClipboardObser
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		this.model.insert(this.stack.removeText());
-		this.model.executeAction("InsertTextAction");
+		EditAction action = this.model.insert(this.stack.removeText());
+		this.model.executeAction(action, "InsertTextAction");
 	}
 
 	@Override

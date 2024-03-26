@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
+import action.DeleteRangeAction;
 import editor.TextEditorModel;
 import editor.TextEditorPanel;
 import observer.SelectionObserver;
@@ -26,7 +27,7 @@ public class CutAction extends AbstractAction implements SelectionObserver {
 	public void actionPerformed(ActionEvent e) {
 		System.out.println("Cut");
 		this.stack.putText(this.model.getSelectedText());
-		this.model.executeAction("DeleteRangeAction");
+		this.model.executeAction(new DeleteRangeAction(model), "DeleteRangeAction");
 		this.panel.revalidate();
 		this.panel.repaint();
 	}

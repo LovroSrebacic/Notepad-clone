@@ -5,17 +5,26 @@ import java.util.List;
 
 import editor.TextEditorModel;
 import location.Location;
+import location.LocationRange;
 
 public class InsertTextAction implements EditAction{
 	
 	private TextEditorModel model;
 	private Location previousCursorLocation;
+	private List<String> previousLines;
+	private LocationRange previousRange;
 
 	private String text;
 	private char c;
 
 	public InsertTextAction(TextEditorModel model) {
 		this.model = model;
+		previousLines = new ArrayList<String>(model.getLines());
+		previousCursorLocation = new Location(model.getCursorLocation());
+
+		if (model.hasSelection()) {
+			previousRange = model.getSelectionRange();
+		}
 	}
 	
 	public void setChar(char c) {
@@ -31,15 +40,15 @@ public class InsertTextAction implements EditAction{
 		List<String> lines = model.getLines();
 		Location cursorLocation = model.getCursorLocation();
 		
-		previousCursorLocation = new Location(cursorLocation);
-
+		List<String> linesCopy = new ArrayList<>(lines);
+		Location cursorLocationCopy = new Location(cursorLocation);
+		
 		if (model.hasSelection()) {
-			model.executeAction("DeleteRangeAction");
+			model.executeAction(new DeleteRangeAction(model), "DeleteRangeAction");
 		}
 
 		if (text == null) {
 			if (c == 10) {
-				lines = model.getLines();
 				List<String> newLines = new ArrayList<>();
 				for (int i = 0; i < lines.size(); i++) {
 					if (cursorLocation.getY() == i) {
@@ -60,7 +69,6 @@ public class InsertTextAction implements EditAction{
 				cursorLocation.updateLocation(1, 0);
 			}
 		} else {
-			lines = model.getLines();
 			String[] newLine = text.split("\\n");
 			String left = lines.get(cursorLocation.getY()).substring(0, cursorLocation.getX());
 			String right = lines.get(cursorLocation.getY()).substring(cursorLocation.getX());
@@ -87,12 +95,24 @@ public class InsertTextAction implements EditAction{
 						cursorLocation.getY() + newLine.length - 1));
 				model.setLines(newLines);
 			}
-			setText(null);
 		}
+		
+		previousLines = new ArrayList<>(linesCopy);
+		previousCursorLocation = cursorLocationCopy;
 
 		model.notifySelectionObservers();
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
+	}
+
+	@Override
+	public void executeUndo() {
+		model.setLines(previousLines);
+		model.setCursorLocation(previousCursorLocation);
+		model.setSelectionRange(previousRange);
+		model.notifyCursorObservers();
+		model.notifyTextObservers();
+		model.notifySelectionObservers();
 	}
 
 }

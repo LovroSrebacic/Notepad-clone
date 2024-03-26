@@ -1,16 +1,27 @@
 package action;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import editor.TextEditorModel;
 import location.Location;
+import location.LocationRange;
 
 public class DeleteBeforeAction implements EditAction{
 
 	private TextEditorModel model;
+	private Location previousCursorLocation;
+	private List<String> previousLines;
+	private LocationRange previousRange;
 
 	public DeleteBeforeAction(TextEditorModel model) {
 		this.model = model;
+		previousLines = new ArrayList<String>(model.getLines());
+		previousCursorLocation = new Location(model.getCursorLocation());
+
+		if (model.hasSelection()) {
+			previousRange = model.getSelectionRange();
+		}
 	}
 
 	@Override
@@ -37,5 +48,15 @@ public class DeleteBeforeAction implements EditAction{
 		
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
+	}
+
+	@Override
+	public void executeUndo() {
+		model.setLines(previousLines);
+		model.setCursorLocation(previousCursorLocation);
+		model.setSelectionRange(previousRange);
+		model.notifyCursorObservers();
+		model.notifyTextObservers();
+		model.notifySelectionObservers();
 	}
 }

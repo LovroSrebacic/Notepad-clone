@@ -21,6 +21,7 @@ import location.LocationRange;
 import observer.CursorObserver;
 import observer.SelectionObserver;
 import observer.TextObserver;
+import undo.UndoManager;
 
 public class TextEditorModel {
 
@@ -33,6 +34,8 @@ public class TextEditorModel {
 	private List<SelectionObserver> selectionObservers;
 
 	private Map<String, EditAction> actions;
+	
+	private UndoManager undoManager;
 
 	public TextEditorModel(String text) {
 		this.lines = new ArrayList<>(Arrays.asList(text.split("\\n")));
@@ -44,6 +47,8 @@ public class TextEditorModel {
 
 		this.actions = new HashMap<>();
 		initializeActions("action");
+		
+		this.undoManager = UndoManager.getInstance();
 	}
 
 	private void initializeActions(String packageName) {
@@ -52,6 +57,9 @@ public class TextEditorModel {
 		EditAction ea = new EditAction() {
 			@Override
 			public void executeDo() {
+			}
+			@Override
+			public void executeUndo() {
 			}
 		};
 
@@ -82,10 +90,18 @@ public class TextEditorModel {
 		}
 	}
 
-	public void executeAction(String actionName) {
-		EditAction action = actions.get(actionName);
+	public void executeAction(EditAction action, String actionName) {
 		if (action != null) {
 			action.executeDo();
+			undoManager.push(action);
+		} else {
+			System.err.println("Action '" + actionName + "' is not found.");
+		}
+	}
+	
+	public void undoAction(EditAction action, String actionName) {
+		if (action != null) {
+			action.executeUndo();
 		} else {
 			System.err.println("Action '" + actionName + "' is not found.");
 		}
@@ -395,14 +411,15 @@ public class TextEditorModel {
 		}
 	}
 
-	public void insert(char c) {
-		EditAction insertTextAction = (InsertTextAction) actions.get("InsertTextAction");
+	public EditAction insert(char c) {
+		EditAction insertTextAction = new InsertTextAction(this);
 		((InsertTextAction) insertTextAction).setChar(c);
+		return insertTextAction;
 	}
 
-	public void insert(String text) {
-		EditAction insertTextAction = (InsertTextAction) actions.get("InsertTextAction");
+	public EditAction insert(String text) {
+		EditAction insertTextAction = new InsertTextAction(this);
 		((InsertTextAction) insertTextAction).setText(text);
-		;
+		return insertTextAction;
 	}
 }

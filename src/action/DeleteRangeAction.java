@@ -72,4 +72,10 @@ public class DeleteRangeAction implements EditAction{
 		model.notifyTextObservers();
 	}
 
+	@Override
+	public void executeUndo() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

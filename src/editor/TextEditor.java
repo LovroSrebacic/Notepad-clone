@@ -19,16 +19,24 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import action.DeleteAfterAction;
+import action.DeleteBeforeAction;
+import action.DeleteRangeAction;
+import action.EditAction;
 import clipboard.ClipboardStack;
 import clipboard.CopyAction;
 import clipboard.CutAction;
 import clipboard.PasteAction;
 import clipboard.PasteAndTakeAction;
 import location.Location;
+import observer.ActionsStackObserver;
 import observer.ClipboardObserver;
 import observer.CursorObserver;
 import observer.SelectionObserver;
 import observer.TextObserver;
+import undo.RedoAction;
+import undo.UndoAction;
+import undo.UndoManager;
 
 public class TextEditor extends JFrame {
 
@@ -45,6 +53,10 @@ public class TextEditor extends JFrame {
 	private AbstractAction copy;
 	private AbstractAction paste;
 	private AbstractAction pasteAndTake;
+	private AbstractAction undo;
+	private AbstractAction redo;
+	
+	private UndoManager undoManager;
 
 	public TextEditor() {
 		initTextEditorModel("Hello World!\nMy name is Lovro Srebacic!\nI hope you have a great day!\n");
@@ -57,6 +69,7 @@ public class TextEditor extends JFrame {
 	private void initTextEditorModel(String text) {
 		this.model = new TextEditorModel(text);
 		this.stack = new ClipboardStack();
+		this.undoManager = UndoManager.getInstance();
 		
 		this.model.addCursorObserver(new CursorObserver() {
 			@Override
@@ -136,17 +149,17 @@ public class TextEditor extends JFrame {
 				}
 				case KeyEvent.VK_BACK_SPACE: {
 					if (model.hasSelection()) {
-						model.executeAction("DeleteRangeAction");
+						model.executeAction(new DeleteRangeAction(model), "DeleteRangeAction");
 					} else {
-						model.executeAction("DeleteBeforeAction");
+						model.executeAction(new DeleteBeforeAction(model), "DeleteBeforeAction");
 					}
 					break;
 				}
 				case KeyEvent.VK_DELETE: {
 					if (model.hasSelection()) {
-						model.executeAction("DeleteRangeAction");
+						model.executeAction(new DeleteRangeAction(model), "DeleteRangeAction");
 					} else {
-						model.executeAction("DeleteAfterAction");
+						model.executeAction(new DeleteAfterAction(model), "DeleteAfterAction");
 					}
 					break;
 				}
@@ -154,8 +167,8 @@ public class TextEditor extends JFrame {
 					if (e.getKeyCode() != KeyEvent.VK_SHIFT && !e.isActionKey() && e.getKeyCode() != KeyEvent.VK_ALT
 							&& e.getKeyCode() != KeyEvent.VK_ALT_GRAPH && !e.isControlDown()
 							&& e.getKeyCode() != KeyEvent.VK_ESCAPE) {
-						model.insert(e.getKeyChar());
-						model.executeAction("InsertTextAction");
+						EditAction action = model.insert(e.getKeyChar());
+						model.executeAction(action, "InsertTextAction");
 					}
 				}
 				}
@@ -172,11 +185,17 @@ public class TextEditor extends JFrame {
 		configureAction(paste, "Paste", KeyStroke.getKeyStroke("control V"), KeyEvent.VK_V, false);
 		pasteAndTake = new PasteAndTakeAction(stack, model);
 		configureAction(pasteAndTake, "Paste and Pop", KeyStroke.getKeyStroke("control shift V"), KeyEvent.VK_V, false);
+		undo = new UndoAction(panel);
+		configureAction(undo, "Undo", KeyStroke.getKeyStroke("control Z"), KeyEvent.VK_Z, false);
+		redo = new RedoAction(panel);
+		configureAction(redo, "Redo", KeyStroke.getKeyStroke("control Y"), KeyEvent.VK_Y, false);
 		
 		stack.addClipboardObserver((ClipboardObserver) paste);
 		stack.addClipboardObserver((ClipboardObserver) pasteAndTake);
 		model.addSelectionObserver((SelectionObserver) cut);
 		model.addSelectionObserver((SelectionObserver) copy);
+		undoManager.addUndoStackObserver((ActionsStackObserver) undo);
+		undoManager.addRedoStackObserver((ActionsStackObserver) redo);
 	}
 	
 	private void configureAction(AbstractAction action, String name, KeyStroke accelerator, int mnemoic, boolean enabled) {
@@ -190,6 +209,8 @@ public class TextEditor extends JFrame {
 		JMenuBar menuBar = new JMenuBar();
 		
 		JMenu edit = new JMenu("Edit");
+		edit.add(new JMenuItem(undo));
+		edit.add(new JMenuItem(redo));
 		edit.add(new JMenuItem(cut));
 		edit.add(new JMenuItem(copy));
 		edit.add(new JMenuItem(paste));
@@ -203,6 +224,8 @@ public class TextEditor extends JFrame {
 	private void createToolbar() {
 		JToolBar toolBar = new JToolBar();
 		
+		toolBar.add(new JButton(undo));
+		toolBar.add(new JButton(redo));
 		toolBar.add(new JButton(cut));
 		toolBar.add(new JButton(copy));
 		toolBar.add(new JButton(paste));

@@ -32,4 +32,10 @@ public class DeleteAfterAction implements EditAction{
 		}
 		model.notifyTextObservers();
 	}
+
+	@Override
+	public void executeUndo() {
+		// TODO Auto-generated method stub
+		
+	}
 }
