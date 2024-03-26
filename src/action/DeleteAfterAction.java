@@ -54,6 +54,7 @@ public class DeleteAfterAction implements EditAction{
 		
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
+		model.notifyStatusBarObservers();
 	}
 
 	@Override
@@ -64,5 +65,6 @@ public class DeleteAfterAction implements EditAction{
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
 		model.notifySelectionObservers();
+		model.notifyStatusBarObservers();
 	}
 }

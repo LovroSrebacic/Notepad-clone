@@ -10,6 +10,7 @@ import java.nio.file.Path;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -19,6 +20,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.border.BevelBorder;
 
 import action.DeleteAfterAction;
 import action.DeleteBeforeAction;
@@ -38,6 +40,7 @@ import observer.ClipboardObserver;
 import observer.CursorObserver;
 import observer.SelectionObserver;
 import observer.TextObserver;
+import status_bar.StatusLabel;
 import undo.RedoAction;
 import undo.UndoAction;
 import undo.UndoManager;
@@ -66,6 +69,8 @@ public class TextEditor extends JFrame {
 	
 	private Path openedFile;
 	
+	private StatusLabel statusLabel;
+	
 	private UndoManager undoManager;
 
 	public TextEditor() {
@@ -74,6 +79,8 @@ public class TextEditor extends JFrame {
 		createActions();
 		createMenuBar();
 		createToolbar();
+		createStatusBar();
+		addListeners();
 	}
 	
 
@@ -130,8 +137,6 @@ public class TextEditor extends JFrame {
 		this.panel.setBackground(Color.WHITE);
 		add(this.panel, BorderLayout.CENTER);
 
-		addListeners();
-
 		pack();
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -157,6 +162,17 @@ public class TextEditor extends JFrame {
 	}
 
 	private void addListeners() {
+		stack.addClipboardObserver((ClipboardObserver) paste);
+		stack.addClipboardObserver((ClipboardObserver) pasteAndTake);
+		
+		model.addSelectionObserver((SelectionObserver) cut);
+		model.addSelectionObserver((SelectionObserver) copy);
+		
+		undoManager.addUndoStackObserver((ActionsStackObserver) undo);
+		undoManager.addRedoStackObserver((ActionsStackObserver) redo);
+		
+		model.addStatusBarObserver(statusLabel);
+		
 		this.panel.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -245,13 +261,6 @@ public class TextEditor extends JFrame {
 		configureAction(save, "Save", KeyStroke.getKeyStroke("control S"), KeyEvent.VK_S, true);
 		exit = new ExitAction();
 		configureAction(exit, "Exit", null, KeyEvent.VK_ESCAPE, true);
-		
-		stack.addClipboardObserver((ClipboardObserver) paste);
-		stack.addClipboardObserver((ClipboardObserver) pasteAndTake);
-		model.addSelectionObserver((SelectionObserver) cut);
-		model.addSelectionObserver((SelectionObserver) copy);
-		undoManager.addUndoStackObserver((ActionsStackObserver) undo);
-		undoManager.addRedoStackObserver((ActionsStackObserver) redo);
 	}
 	
 	private void configureAction(AbstractAction action, String name, KeyStroke accelerator, int mnemoic, boolean enabled) {
@@ -296,6 +305,12 @@ public class TextEditor extends JFrame {
 		
 		toolBar.setFloatable(true);
 		add(toolBar, BorderLayout.NORTH);
+	}
+	
+	private void createStatusBar() {
+		this.statusLabel = new StatusLabel("Cursor location: 1, 1     Number of lines: 3");
+		this.statusLabel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+		add(statusLabel, BorderLayout.SOUTH);
 	}
 
 	public static void main(String[] args) {

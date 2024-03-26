@@ -12,6 +12,7 @@ import location.Location;
 import location.LocationRange;
 import observer.CursorObserver;
 import observer.SelectionObserver;
+import observer.StatusBarObserver;
 import observer.TextObserver;
 import undo.UndoManager;
 
@@ -24,6 +25,7 @@ public class TextEditorModel {
 	private List<CursorObserver> cursorObservers;
 	private List<TextObserver> textObservers;
 	private List<SelectionObserver> selectionObservers;
+	private List<StatusBarObserver> statusBarObservers; 
 
 	
 	private UndoManager undoManager;
@@ -35,6 +37,7 @@ public class TextEditorModel {
 		this.cursorObservers = new ArrayList<>();
 		this.textObservers = new ArrayList<>();
 		this.selectionObservers = new ArrayList<>();
+		this.statusBarObservers = new ArrayList<>();
 		
 		this.undoManager = UndoManager.getInstance();
 	}
@@ -151,6 +154,24 @@ public class TextEditorModel {
 			}
 		}
 	}
+	
+	public void addStatusBarObserver(StatusBarObserver statusBarObserver) {
+		if (!this.statusBarObservers.contains(statusBarObserver)) {
+			this.statusBarObservers.add(statusBarObserver);
+		}
+	}
+
+	public void removeStatusBarObserver(StatusBarObserver statusBarObserver) {
+		this.statusBarObservers.remove(statusBarObserver);
+	}
+
+	public void notifyStatusBarObservers() {
+		String status = "Cursor location: " + (getCursorLocation().getY() + 1) + ", " + (getCursorLocation().getX() + 1) + 
+				"     Number of lines: " + getLines().size();
+		for (StatusBarObserver statusBarObserver : statusBarObservers) {
+			statusBarObserver.updateStatusBar(status);
+		}
+	}
 
 	public void moveCursorLeft(boolean shift) {
 		if (!shift && this.selectionRange != null) {
@@ -169,6 +190,7 @@ public class TextEditorModel {
 		}
 		notifyCursorObservers();
 		notifySelectionObservers();
+		notifyStatusBarObservers();
 	}
 
 	public void moveCursorRight(boolean shift) {
@@ -192,6 +214,7 @@ public class TextEditorModel {
 
 		notifyCursorObservers();
 		notifySelectionObservers();
+		notifyStatusBarObservers();
 	}
 
 	public void moveCursorUp(boolean shift) {
@@ -212,6 +235,7 @@ public class TextEditorModel {
 
 		notifyCursorObservers();
 		notifySelectionObservers();
+		notifyStatusBarObservers();
 	}
 
 	public void moveCursorDown(boolean shift) {
@@ -231,6 +255,7 @@ public class TextEditorModel {
 
 		notifyCursorObservers();
 		notifySelectionObservers();
+		notifyStatusBarObservers();
 	}
 
 	public void addSelectionLeft() {

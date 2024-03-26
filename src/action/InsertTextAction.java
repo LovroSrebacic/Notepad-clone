@@ -103,6 +103,7 @@ public class InsertTextAction implements EditAction{
 		model.notifySelectionObservers();
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
+		model.notifyStatusBarObservers();
 	}
 
 	@Override
@@ -113,6 +114,7 @@ public class InsertTextAction implements EditAction{
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
 		model.notifySelectionObservers();
+		model.notifyStatusBarObservers();
 	}
 
 }

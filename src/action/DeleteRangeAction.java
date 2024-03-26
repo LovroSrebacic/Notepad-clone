@@ -88,6 +88,7 @@ public class DeleteRangeAction implements EditAction{
 		model.notifySelectionObservers();
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
+		model.notifyStatusBarObservers();
 	}
 
 	@Override
@@ -98,6 +99,7 @@ public class DeleteRangeAction implements EditAction{
 		model.notifyCursorObservers();
 		model.notifyTextObservers();
 		model.notifySelectionObservers();
+		model.notifyStatusBarObservers();
 	}
 
 }
