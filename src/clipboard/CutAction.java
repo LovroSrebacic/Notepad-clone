@@ -25,7 +25,6 @@ public class CutAction extends AbstractAction implements SelectionObserver {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("Cut");
 		this.stack.putText(this.model.getSelectedText());
 		this.model.executeAction(new DeleteRangeAction(model), "DeleteRangeAction");
 		this.panel.revalidate();

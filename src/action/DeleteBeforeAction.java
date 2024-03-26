@@ -28,6 +28,13 @@ public class DeleteBeforeAction implements EditAction{
 	public void executeDo() {
 		List<String> newLines = model.getLines();
 		Location newCursorLocation = model.getCursorLocation();
+		
+		List<String> linesCopy = new ArrayList<>(newLines);
+		Location cursorLocationCopy = new Location(newCursorLocation);
+		
+		if (model.hasSelection()) {
+			model.executeAction(new DeleteRangeAction(model), "DeleteRangeAction");
+		}
 
 		if (newCursorLocation.getX() == 0) {
 			if (newCursorLocation.getY() != 0) {
@@ -45,6 +52,9 @@ public class DeleteBeforeAction implements EditAction{
 			newLines.set(newCursorLocation.getY(), newLine);
 			newCursorLocation.setLocation(newCursorLocation.getX() - 1, newCursorLocation.getY());
 		}
+		
+		previousLines = new ArrayList<>(linesCopy);
+		previousCursorLocation = cursorLocationCopy;
 		
 		model.notifyCursorObservers();
 		model.notifyTextObservers();

@@ -1,17 +1,9 @@
 package editor;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
-import com.sun.tools.javac.Main;
 
 import action.EditAction;
 import action.InsertTextAction;
@@ -33,7 +25,6 @@ public class TextEditorModel {
 	private List<TextObserver> textObservers;
 	private List<SelectionObserver> selectionObservers;
 
-	private Map<String, EditAction> actions;
 	
 	private UndoManager undoManager;
 
@@ -44,50 +35,8 @@ public class TextEditorModel {
 		this.cursorObservers = new ArrayList<>();
 		this.textObservers = new ArrayList<>();
 		this.selectionObservers = new ArrayList<>();
-
-		this.actions = new HashMap<>();
-		initializeActions("action");
 		
 		this.undoManager = UndoManager.getInstance();
-	}
-
-	private void initializeActions(String packageName) {
-		// So that the Class loader can find package 'action'
-		@SuppressWarnings("unused")
-		EditAction ea = new EditAction() {
-			@Override
-			public void executeDo() {
-			}
-			@Override
-			public void executeUndo() {
-			}
-		};
-
-		try {
-			for (String className : getClassNamesFromPackage(packageName)) {
-				Class<?> cls = Class.forName(packageName + "." + className);
-				if (EditAction.class.isAssignableFrom(cls) && !className.equals("EditAction")) {
-					Constructor<?> constructor = cls.getConstructor(TextEditorModel.class);
-					EditAction action = (EditAction) constructor.newInstance(this);
-					actions.put(className, action);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private String[] getClassNamesFromPackage(String packageName) {
-		String packagePath = packageName.replace('.', '/');
-		try (BufferedReader reader = new BufferedReader(
-				new InputStreamReader(Main.class.getClassLoader().getResourceAsStream(packagePath)))) {
-			return reader.lines().filter(line -> line.endsWith(".class"))
-					.map(line -> line.substring(0, line.length() - 6)) // Remove .class extension
-					.toArray(String[]::new);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return new String[0]; // return empty array in case of an exception
-		}
 	}
 
 	public void executeAction(EditAction action, String actionName) {
@@ -162,7 +111,6 @@ public class TextEditorModel {
 	}
 
 	public void notifyCursorObservers() {
-		System.out.println("Cursor location: x = " + cursorLocation.getX() + "; y = " + cursorLocation.getY());
 		for (CursorObserver cursorObserver : cursorObservers) {
 			cursorObserver.updateCursorLocation(cursorLocation);
 		}
