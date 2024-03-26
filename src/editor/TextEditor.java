@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.nio.file.Path;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -28,6 +29,9 @@ import clipboard.CopyAction;
 import clipboard.CutAction;
 import clipboard.PasteAction;
 import clipboard.PasteAndTakeAction;
+import file.ExitAction;
+import file.OpenAction;
+import file.SaveAction;
 import location.Location;
 import observer.ActionsStackObserver;
 import observer.ClipboardObserver;
@@ -56,6 +60,12 @@ public class TextEditor extends JFrame {
 	private AbstractAction undo;
 	private AbstractAction redo;
 	
+	private AbstractAction open;
+	private AbstractAction save;
+	private AbstractAction exit;
+	
+	private Path openedFile;
+	
 	private UndoManager undoManager;
 
 	public TextEditor() {
@@ -65,6 +75,7 @@ public class TextEditor extends JFrame {
 		createMenuBar();
 		createToolbar();
 	}
+	
 
 	private void initTextEditorModel(String text) {
 		this.model = new TextEditorModel(text);
@@ -87,7 +98,33 @@ public class TextEditor extends JFrame {
 			}
 		});
 	}
-
+	
+	public void openNewFile(String text) {
+		this.model = new TextEditorModel(text);
+		this.stack = new ClipboardStack();
+		this.undoManager = UndoManager.getInstance();
+		
+		this.model.addCursorObserver(new CursorObserver() {
+			@Override
+			public void updateCursorLocation(Location location) {
+				
+				panel.revalidate();
+				panel.repaint();
+			}
+		});
+		this.model.addTextObserver(new TextObserver() {
+			@Override
+			public void updateText() {
+				panel.revalidate();
+				panel.repaint();
+			}
+		});
+		
+		 this.panel.setModel(model);
+		 this.panel.revalidate();
+		 this.panel.repaint();
+	}
+	
 	private void initGUI() {
 		this.panel = new TextEditorPanel(model);
 		this.panel.setBackground(Color.WHITE);
@@ -105,6 +142,18 @@ public class TextEditor extends JFrame {
 		setTitle("Notepad clone");
 		this.panel.revalidate();
 		this.panel.repaint();
+		
+		this.model.notifyCursorObservers();
+		this.model.notifyTextObservers();
+		this.model.notifySelectionObservers();
+	}
+	
+	public void setOpenedFile(Path path) {
+		this.openedFile = path;
+	}
+	
+	public Path getOpenedFile() {
+		return this.openedFile;
 	}
 
 	private void addListeners() {
@@ -190,6 +239,13 @@ public class TextEditor extends JFrame {
 		redo = new RedoAction(panel);
 		configureAction(redo, "Redo", KeyStroke.getKeyStroke("control Y"), KeyEvent.VK_Y, false);
 		
+		open = new OpenAction(this);
+		configureAction(open, "Open", KeyStroke.getKeyStroke("control O"), KeyEvent.VK_O, true);
+		save = new SaveAction(this, model);
+		configureAction(save, "Save", KeyStroke.getKeyStroke("control S"), KeyEvent.VK_S, true);
+		exit = new ExitAction();
+		configureAction(exit, "Exit", null, KeyEvent.VK_ESCAPE, true);
+		
 		stack.addClipboardObserver((ClipboardObserver) paste);
 		stack.addClipboardObserver((ClipboardObserver) pasteAndTake);
 		model.addSelectionObserver((SelectionObserver) cut);
@@ -207,6 +263,13 @@ public class TextEditor extends JFrame {
 	
 	private void createMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
+		
+		JMenu file = new JMenu("File");
+		file.add(new JMenuItem(open));
+		file.add(new JMenuItem(save));
+		file.add(new JMenuItem(exit));
+		
+		menuBar.add(file);
 		
 		JMenu edit = new JMenu("Edit");
 		edit.add(new JMenuItem(undo));

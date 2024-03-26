@@ -131,4 +131,8 @@ public class TextEditorPanel extends JPanel{
 	public Dimension getPreferredSize() {
 		return new Dimension(width, height);
 	}
+	
+	public void setModel(TextEditorModel model) {
+		this.model = model;
+	}
 }
